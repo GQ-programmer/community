@@ -6,21 +6,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pub.zgq.community.dao.DiscussPostMapper;
+import pub.zgq.community.dao.LoginTicketMapper;
 import pub.zgq.community.dao.UserMapper;
 import pub.zgq.community.entity.DiscussPost;
+import pub.zgq.community.entity.LoginTicket;
 import pub.zgq.community.entity.User;
+import pub.zgq.community.util.CommunityConstant;
 
 /**
  * @Author 孑然
  */
 @SpringBootTest
-public class MapperTest {
+public class MapperTest implements CommunityConstant {
 
     @Autowired
     private UserMapper userMapper;
 
     @Autowired
     private DiscussPostMapper discussPostMapper;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     @Test
     public void testSelectUser(){
@@ -72,5 +78,41 @@ public class MapperTest {
 
         int rows = discussPostMapper.selectDiscussPostRows(149);
         System.out.println(rows);
+    }
+
+    @Test
+    public void testInsertLoginTicket(){
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(101);
+        loginTicket.setTicket("abc");
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + 1000 * 60 * 10));
+
+        loginTicketMapper.insertLoginTicket(loginTicket);
+    }
+
+    @Test
+    public void testSelectLoginTicket() {
+        LoginTicket loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
+
+        int res = loginTicketMapper.updateStatus("abc", 1);
+        loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
+
+    }
+
+    @Test
+    public void testExpired(){
+        int default_epired = DEFAULT_EXPIRED_SECONDS;
+        int remember_expired = REMEMBERME_EXPIRED_SECONDS;
+        //                                  毫秒                      秒*1000
+        System.out.println(new Date(System.currentTimeMillis() + remember_expired * 1000));
+        System.out.println(new Date((System.currentTimeMillis() + remember_expired) * 1000));
+        System.out.println(new Date(System.currentTimeMillis() + remember_expired ));
+        System.out.println(new Date(System.currentTimeMillis() * 1000 ));
+        System.out.println(new Date(System.currentTimeMillis() ));
+        System.out.println(default_epired);
+        System.out.println(remember_expired);
     }
 }
