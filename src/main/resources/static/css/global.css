@@ -3,7 +3,7 @@ html {
 }
 
 body {
-	background: #eee;
+	background: #f7f8f9;
 	font-family: arial, STHeiti, 'Microsoft YaHei', \5b8b\4f53;
 	font-size: 14px;
 	height: 100%;
@@ -21,10 +21,10 @@ body {
 }
 
 header .navbar-brand {
-	background: url('http://static.nowcoder.com/images/res/logo/logo-v3.png') no-repeat;
+	/*background: url('http://static.nowcoder.com/images/res/logo/logo-v3.png') no-repeat;*/
 	background-size: 147px 42px;
-	width: 147px;
-	height: 42px;
+	width: 66px;
+	height: 44px;
 	margin: 5px 15px 5px 0;
 }
 
@@ -47,6 +47,10 @@ footer {
 	width: 100%;
 }
 
+ .footerText ul li{
+	 color: gray;
+ }
+
 footer .qrcode {
 	text-align: center;
 }
@@ -68,6 +72,13 @@ footer .company-info li {
 .main .container {
 	background: #fff;
 	padding: 20px;
+}
+
+.btn-customColor {
+	background-color: #5385f1;
+}
+.text-customColor {
+	color: #5385f1;;
 }
 
 i {
