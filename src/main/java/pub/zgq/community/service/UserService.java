@@ -1,9 +1,18 @@
 package pub.zgq.community.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import pub.zgq.community.dao.LoginTicketMapper;
@@ -15,6 +24,7 @@ import pub.zgq.community.util.CommunityUtil;
 import pub.zgq.community.util.MailClient;
 
 
+import javax.mail.MessagingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +35,8 @@ import java.util.Random;
  */
 @Service
 public class UserService implements CommunityConstant {
+
+    public static final Logger logger = LoggerFactory.getLogger(MailClient.class);
 
     @Autowired
     private UserMapper userMapper;
@@ -37,6 +49,9 @@ public class UserService implements CommunityConstant {
 
     @Autowired
     private LoginTicketMapper  loginTicketMapper;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     /**
      * 项目路径
@@ -56,7 +71,8 @@ public class UserService implements CommunityConstant {
         return userMapper.selectById(id);
     }
 
-    public Map<String, Object> register(User user) {
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
+    public Map<String, Object> register(User user) throws Exception {
         Map<String, Object> map = new HashMap<>();
 
         // 控制处理
@@ -105,8 +121,8 @@ public class UserService implements CommunityConstant {
         user.setHeaderUrl(String.format("https://images.nowcoder.com/head/%dt.png", new Random().nextInt(1000)));
         user.setCreateTime(new Date());
 
+        // 先发送邮箱，后注册（可能存在无效邮箱）
         userMapper.insertUser(user);
-
         // 发送激活邮件
         Context context = new Context();
         context.setVariable("email", user.getEmail());
@@ -116,10 +132,11 @@ public class UserService implements CommunityConstant {
 
         // 生成邮件内容
         String content = templateEngine.process("/mail/activation", context);
+
         mailClient.sendMail(user.getEmail(), "激活账号", content);
-
-
         return map;
+
+
     }
 
     public int activation(int userId, String code){

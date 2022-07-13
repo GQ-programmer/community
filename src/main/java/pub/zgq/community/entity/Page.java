@@ -99,10 +99,12 @@ public class Page {
      * @return
      */
     public int getFrom() {
-        if (current == getTotal()) {
-            return current - 4;
-        } else if (current == getTotal() - 1) {
-            return current - 3;
+        if (getTotal() > 4) {
+            if (current == getTotal() && current > 4) {
+                return current - 4;
+            } else if (current == getTotal() - 1) {
+                return current - 3;
+            }
         }
         int from = current - 2;
         return from < 1 ? 1 : from;

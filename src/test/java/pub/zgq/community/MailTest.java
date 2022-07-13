@@ -7,7 +7,9 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import pub.zgq.community.util.MailClient;
 
+
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
 
 
 /**
@@ -26,12 +28,12 @@ public class MailTest {
     private TemplateEngine templateEngine;
 
     @Test
-    public void testTextMail(){
+    public void testTextMail() throws MessagingException {
         mailClient.sendMail("3213821843@qq.com", "TEST", "你好啊！");
     }
 
     @Test
-    public void testHtmlMail() {
+    public void testHtmlMail() throws MessagingException {
         //向html中传入数据
         Context context = new Context();
         context.setVariable("username", "sunday");
@@ -41,7 +43,7 @@ public class MailTest {
         System.out.println(content);
 
         //发送邮件
-        mailClient.sendMail("gq_2002@qq.com", "html邮件", content);
+        mailClient.sendMail("2776477040@qq.com", "html邮件", content);
 
     }
 

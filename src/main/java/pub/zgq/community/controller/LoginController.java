@@ -1,7 +1,6 @@
 package pub.zgq.community.controller;
 
 import com.google.code.kaptcha.Producer;
-import com.sun.deploy.net.HttpResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +17,7 @@ import pub.zgq.community.util.CommunityUtil;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.mail.MessagingException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -70,7 +70,18 @@ public class LoginController implements CommunityConstant {
      */
     @RequestMapping(path = "/register", method = RequestMethod.POST)
     public String register(Model model, User user) {
-        Map<String, Object> map = userService.register(user);
+        String password = user.getPassword();
+        Map<String, Object> map = null;
+        try {
+            map = userService.register(user);
+        } catch (Exception e) {
+            model.addAttribute("emailMsg", "注册失败，邮箱无效！");
+            // 恢复user中的密码
+            user.setPassword(password);
+            e.printStackTrace();
+            logger.error("注册失败，邮箱可能无效！" + e.getMessage());
+            return "/site/register";
+        }
         if (map == null || map.isEmpty()) {
             model.addAttribute("msg","注册成功, 我们已经向您的邮箱发送了一封激活邮件，请尽快激活!");
             model.addAttribute("target", "/index");
