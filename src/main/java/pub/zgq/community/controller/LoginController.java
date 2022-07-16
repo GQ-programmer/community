@@ -136,21 +136,21 @@ public class LoginController implements CommunityConstant {
         BufferedImage image = kaptchaProducer.createImage(text);
 
         // 将验证码内容存入session中
-        session.setAttribute("kaptcha", text);
-        System.out.println(session.getAttribute("kaptcha"));
+        //session.setAttribute("kaptcha", text);
+        //System.out.println(session.getAttribute("kaptcha"));
 
-        //// 将验证码存入redis中
-        //// 生成验证码的归属标记
-        //String kaptchaOwner = CommunityUtil.generateUUID();
-        //Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
-        //cookie.setMaxAge(60);
-        //cookie.setPath(contextPath);
-        //response.addCookie(cookie);
-        //
-        //// 传入redis中 过期时间60秒
-        //// 根据归属标记生成key
-        //String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
-        //redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS);
+        // 将验证码存入redis中
+        // 生成验证码的归属标记
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
+
+        // 传入redis中 过期时间60秒
+        // 根据归属标记生成key
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS);
 
         // 将图片输出给浏览器
         response.setContentType("image/png");
@@ -164,18 +164,18 @@ public class LoginController implements CommunityConstant {
     }
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     public String login(@CookieValue(value = "kaptchaOwner",required = false) String kaptchaOwner, String username, String password, String code, boolean rememberme,
-                        Model model,HttpSession session, HttpServletResponse response) {
+                        Model model, HttpServletResponse response) {
         // 从Session中获取验证码
-        String kaptcha = (String) session.getAttribute("kaptcha");
+        //String kaptcha = (String) session.getAttribute("kaptcha");
 
         // 优化 从redis中获取验证码
         // 从cookie中获取验证码归属标记 kaptchaOwner
         // 获得key
-        //String kaptcha = null;
-        //if (StringUtils.isNotBlank(kaptchaOwner)) {
-        //    String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
-        //    kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
-        //}
+        String kaptcha = null;
+        if (StringUtils.isNotBlank(kaptchaOwner)) {
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
         // 判断验证码
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
             model.addAttribute("codeMsg", "验证码不正确!");

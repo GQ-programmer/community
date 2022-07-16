@@ -50,8 +50,8 @@ public class UserService implements CommunityConstant {
     @Autowired
     private TemplateEngine templateEngine;
 
-    @Autowired
-    private LoginTicketMapper  loginTicketMapper;
+    //@Autowired
+    //private LoginTicketMapper  loginTicketMapper;
 
     @Autowired
     private TransactionTemplate transactionTemplate;
@@ -74,14 +74,14 @@ public class UserService implements CommunityConstant {
     private String domain;
 
     public User findUserById(int id){
-        return userMapper.selectById(id);
+        //return userMapper.selectById(id);
         // 先从redis中获取
-        //User user = getCache(id);
-        //if (user == null) {
-        //    //初始化数据进redis
-        //    user = initCache(id);
-        //}
-        //return user;
+        User user = getCache(id);
+        if (user == null) {
+            //初始化数据进redis
+            user = initCache(id);
+        }
+        return user;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
@@ -166,7 +166,7 @@ public class UserService implements CommunityConstant {
             //激活成功
             userMapper.updateStatus(userId, 1);
             // 清理User缓存
-            //clearCache(userId);
+            clearCache(userId);
             return ACTIVATION_SUCCESS;
         }
         // 激活失败
@@ -213,11 +213,11 @@ public class UserService implements CommunityConstant {
         // 当前时间 + 往后推移时间秒数     expiredSeconds 注意使用 long类型， 否则会操过int范围
         loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
         // 存入数据库中
-        loginTicketMapper.insertLoginTicket(loginTicket);
+        //loginTicketMapper.insertLoginTicket(loginTicket);
 
         // 存入redis中
-        //String redisKey = RedisKeyUtil.getTicketKey(loginTicket.getTicket());
-        //redisTemplate.opsForValue().set(redisKey, loginTicket);
+        String redisKey = RedisKeyUtil.getTicketKey(loginTicket.getTicket());
+        redisTemplate.opsForValue().set(redisKey, loginTicket);
 
         map.put("ticket", loginTicket.getTicket());
         return map;
@@ -229,14 +229,14 @@ public class UserService implements CommunityConstant {
      * @param ticket
      */
     public void logout(String ticket){
-        loginTicketMapper.updateStatus(ticket, 1);
+        //loginTicketMapper.updateStatus(ticket, 1);
 
         // 改为redis
-        //String redisKey = RedisKeyUtil.getTicketKey(ticket);
-        //// 更改当前ticke的状态 (失效)
-        //LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(redisKey);
-        //loginTicket.setStatus(1);
-        //redisTemplate.opsForValue().set(redisKey, loginTicket);
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        // 更改当前ticke的状态 (失效)
+        LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(redisKey);
+        loginTicket.setStatus(1);
+        redisTemplate.opsForValue().set(redisKey, loginTicket);
     }
 
     /**
@@ -245,16 +245,16 @@ public class UserService implements CommunityConstant {
      * @return
      */
     public LoginTicket findLoginTicket(String ticket) {
-        return loginTicketMapper.selectByTicket(ticket);
+        //return loginTicketMapper.selectByTicket(ticket);
         // 改为redis
-        //String redisKey = RedisKeyUtil.getTicketKey(ticket);
-        //return (LoginTicket) redisTemplate.opsForValue().get(redisKey);
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        return (LoginTicket) redisTemplate.opsForValue().get(redisKey);
     }
 
     public int updateHeader(int userId, String headerUrl) {
         int rows = userMapper.updateHeader(userId, headerUrl);
         // 清理缓存
-        //clearCache(userId);
+        clearCache(userId);
         return rows;
     }
 
@@ -271,7 +271,7 @@ public class UserService implements CommunityConstant {
         newPassword = CommunityUtil.md5(newPassword + user.getSalt());
         userMapper.updatePassword(user.getId(), newPassword);
         // 清理缓存
-        //clearCache(user.getId());
+        clearCache(user.getId());
         return map;
     }
 
