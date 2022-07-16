@@ -9,7 +9,9 @@ import pub.zgq.community.entity.DiscussPost;
 import pub.zgq.community.entity.Page;
 import pub.zgq.community.entity.User;
 import pub.zgq.community.service.DiscussPostService;
+import pub.zgq.community.service.LikeService;
 import pub.zgq.community.service.UserService;
+import pub.zgq.community.util.CommunityConstant;
 
 import java.util.*;
 
@@ -17,13 +19,16 @@ import java.util.*;
  * @Author 孑然
  */
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page){
@@ -43,10 +48,19 @@ public class HomeController {
                 //根据帖子的user_id查询user对象
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+                // 查询帖子被赞数量
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", likeCount);
+
                 discussPosts.add(map);
             }
         }
         model.addAttribute("discussPosts", discussPosts);
         return "/index";
+    }
+
+    @RequestMapping(path = "/error", method = RequestMethod.GET)
+    public String getErrorPage() {
+        return "/error/500";
     }
 }

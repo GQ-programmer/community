@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pub.zgq.community.dao.DiscussPostMapper;
 import pub.zgq.community.dao.LoginTicketMapper;
+import pub.zgq.community.dao.MessageMapper;
 import pub.zgq.community.dao.UserMapper;
 import pub.zgq.community.entity.DiscussPost;
 import pub.zgq.community.entity.LoginTicket;
+import pub.zgq.community.entity.Message;
 import pub.zgq.community.entity.User;
 import pub.zgq.community.util.CommunityConstant;
 
@@ -27,6 +29,9 @@ public class MapperTest implements CommunityConstant {
 
     @Autowired
     private LoginTicketMapper loginTicketMapper;
+
+    @Autowired
+    private MessageMapper messageMapper;
 
     @Test
     public void testSelectUser(){
@@ -114,5 +119,26 @@ public class MapperTest implements CommunityConstant {
         System.out.println(new Date(System.currentTimeMillis() ));
         System.out.println(default_epired);
         System.out.println(remember_expired);
+    }
+
+    @Test
+    public void testConversations() {
+        List<Message> list = messageMapper.selectConversations(111, 0, 20);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+
+        int count = messageMapper.selectConversationCount(111);
+        System.out.println(count);
+
+        List<Message> list1 = messageMapper.selectLetters("111_112", 0, 10);
+        for (Message message : list1) {
+            System.out.println(message);
+        }
+
+        System.out.println(messageMapper.selectLettersCount("111_112"));
+
+        int count1 = messageMapper.selectLetterUnreadCount(131, "111_131");
+        System.out.println(count1);
     }
 }

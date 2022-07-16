@@ -10,6 +10,8 @@ import java.util.Properties;
 
 /**
  * @Author 孑然
+ *
+ * 自定义配置Kaptcha
  */
 @Configuration
 public class KaptchaConfig {

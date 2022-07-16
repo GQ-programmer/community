@@ -7,6 +7,7 @@ import pub.zgq.community.entity.LoginTicket;
  * @Author 孑然
  */
 @Mapper
+//@Deprecated
 public interface LoginTicketMapper {
 
     @Insert({
